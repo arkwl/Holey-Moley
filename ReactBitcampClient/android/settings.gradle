@@ -1,0 +1,3 @@
+rootProject.name = 'ReactBitcampClient'
+
+include ':app'
