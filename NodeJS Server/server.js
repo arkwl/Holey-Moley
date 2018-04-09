@@ -55,7 +55,7 @@ wss.on('connection', function connection(ws) {
 			client_coords.push(message.coords)
 
 			requests({
-				url:"https://maps.googleapis.com/maps/api/geocode/json?latlng=" + message.coords.y + "," + message.coords.x + "&key=AIzaSyDeBMwodkWHr82lBFMjIJEBFrnZnXTLSg8",
+				url:"https://maps.googleapis.com/maps/api/geocode/json?latlng=" + message.coords.y + "," + message.coords.x + "&key=###########################",
 				json: true
 			}, function (error, res, body) {
 				//console.log(JSON.parse(body).results[0].formatted_address);
