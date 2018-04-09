@@ -1,0 +1,143 @@
+<html>
+<head>
+	<title>Holy Moley!</title>
+	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+	<link rel="stylesheet" href="https://js.arcgis.com/4.6/esri/css/main.css">
+	<script src="https://js.arcgis.com/4.6/"></script>
+
+	  <style>
+		html,
+		body,
+		#viewDiv {
+		  padding: 0;
+		  margin: 0;
+		  height: 90%;
+		  width: 100%;
+		}
+	  </style>
+
+	  <script>
+		if(!window.WebSocket){
+		  console.log("BROWSER DOES NOT SUPPORT WEB SOCKETS");
+		}
+	  </script>
+
+	  <script>
+		const pinAction = {
+			title: "Assign",
+			id: "assign",
+			className: "esri-icon-group"
+		};
+		require([
+		  "esri/Map",
+		  "esri/views/MapView",
+		  "esri/Graphic",
+		  "esri/layers/GraphicsLayer",
+		  "esri/layers/FeatureLayer",
+		  "esri/geometry/support/jsonUtils",
+		  "dojo/domReady!"
+		],
+		function(Map, MapView, Graphic, GraphicsLayer, FeatureLayer, geometryJsonUtils) {
+		  const MAXGRAPHICS = 10;
+
+		let lyr = new FeatureLayer({
+			portalItem: {
+				id: "666dc35f601449cea93ee36472360ebe"
+			},
+			outFields: ["*"],
+			popupTemplate: {title: "FIELD: {field}",
+			actions: [pinAction]}
+		});
+		  // Create map and add the layer
+		  var map = new Map({
+			layers: [lyr],
+			basemap: "topo-vector",
+			actions: [pinAction]
+		  });
+		  
+		  // Create the MapView and add the map
+		  var view = new MapView({
+			container: "viewDiv",  
+			map: map,    
+			center: [-73.967569, 40.727724],
+			zoom: 12
+		  });
+
+
+		  // Init websocket and listen for updates
+		  var ws = new WebSocket("ws://localhost:1337");
+		  ws.onmessage = (event) => {
+			var feature = JSON.parse(event.data);
+			var geometry = geometryJsonUtils.fromJSON(feature.geometry);
+			view.graphics.add(new Graphic({
+			  geometry: geometry,
+			  symbol: markerSymbol,
+			  attributes: feature.attributes
+			}));
+			if(view.graphics.length > MAXGRAPHICS){
+			  view.graphics.shift();
+			}
+		  };
+
+		
+		  // Define the marker symbol
+		  var markerSymbol = {
+			type: "simple-marker",
+			color: [226, 119, 40],
+			size: "8px"
+		  };
+			view.popup.on("trigger-action", e => {
+			  if(e.action.id === 'assign'){
+			  	var stuff = {
+					tag: "assign_point",
+					coords: {
+						x: e.target.features[0].geometry.longitude,
+						y: e.target.features[0].geometry.latitude
+					}
+				}
+				var blob = new Blob([JSON.stringify(stuff)], {type: "application/json"});
+				ws.send(blob);
+			  }
+			});
+
+		});
+
+	  </script>
+<head>
+
+<body>
+	<div class="container">
+		<div class="row">
+			<div class="col-xl-6 col-centered">
+				<img style="width:10%;height:10%;" src="holeymoley.png"/>
+
+<button type="button" class="btn btn-primary" data-toggle="modal" data-target="#exampleModal">
+  Launch demo modal
+</button>
+<div class="modal fade" id="exampleModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="exampleModalLabel">Modal title</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        ...
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+        <button type="button" class="btn btn-primary">Save changes</button>
+      </div>
+    </div>
+  </div>
+</div>
+				<div id="viewDiv"></div>		
+				</div>
+			</div>
+		</div>
+	</div>
+</body>
+
+</html>
