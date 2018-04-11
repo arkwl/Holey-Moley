@@ -37,10 +37,10 @@ def gen(camera):
             print("success")
             rawFrame = camera.get_frame()
             frame = cv2.imencode('.jpg', rawFrame)[1].tobytes()
-            cv2.imwrite(r'/Users/arkwl/Desktop/Workstation/Pothole/images/photo_'+ str(n)+'.jpg', rawFrame)
+            cv2.imwrite(r'./images/photo_'+ str(n)+'.jpg', rawFrame)
 
             #write coordinates
-            f= open(r'/Users/arkwl/Desktop/Workstation/Pothole/images/coor_'+ str(n)+'.txt', "w+")
+            f= open(r'./images/coor_'+ str(n)+'.txt', "w+")
             f.write(str(datetime.datetime.today()))
             f.close()
 
